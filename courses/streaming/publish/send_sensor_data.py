@@ -19,7 +19,7 @@ import gzip
 import logging
 import argparse
 import datetime
-from google.cloud import pubsub
+from google.cloud import pubsub_v1
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 TOPIC = 'sandiego'
@@ -30,10 +30,11 @@ def publish(publisher, topic, events):
    if numobs > 0:
        logging.info('Publishing {} events from {}'.format(numobs, get_timestamp(events[0])))
        for event_data in events:
-         publisher.publish(topic,event_data.encode())
+         publisher.publish(topic,event_data)
 
 def get_timestamp(line):
    # look at first field of row
+   line = line.decode('UTF-8')
    timestamp = line.split(',')[0]
    return datetime.datetime.strptime(timestamp, TIME_FORMAT)
 
@@ -83,13 +84,13 @@ if __name__ == '__main__':
 
    # create Pub/Sub notification topic
    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
-   publisher = pubsub.PublisherClient()
+   publisher = pubsub_v1.PublisherClient()
    event_type = publisher.topic_path(args.project,TOPIC)
    try:
-      publisher.get_topic(event_type)
+      publisher.get_topic(topic=event_type)
       logging.info('Reusing pub/sub topic {}'.format(TOPIC))
    except:
-      publisher.create_topic(event_type)
+      publisher.create_topic(request={"name"=event_type})
       logging.info('Creating pub/sub topic {}'.format(TOPIC))
 
    # notify about each line in the input file
