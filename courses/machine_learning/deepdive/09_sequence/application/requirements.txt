@@ -1,4 +1,4 @@
-Flask==0.12.2
+Flask==2.3.2
 gunicorn==19.7.1
 numpy==1.14.1
 tensorflow==1.5
